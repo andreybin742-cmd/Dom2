@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🚀 Космический сборщик</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0a1a;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            font-family: -apple-system, Arial, sans-serif;
+            touch-action: none;
+            position: fixed;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Интерфейс */
+        .ui {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .score {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffd700;
+            font-size: 24px;
+            font-weight: 700;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 24px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            pointer-events: none;
+        }
+        .score span {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .combo {
+            position: absolute;
+            top: 75px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff6bb5;
+            font-size: 18px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+            text-shadow: 0 0 20px rgba(255, 107, 181, 0.5);
+            pointer-events: none;
+        }
+        .combo.active {
+            opacity: 1;
+        }
+        .lives {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #ff6b6b;
+            font-size: 22px;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 6px 16px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 107, 0.2);
+            pointer-events: none;
+        }
+        .camera-status {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 6px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .camera-status.active {
+            color: #00ff88;
+            border-color: rgba(0, 255, 136, 0.2);
+        }
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 26, 0.92);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            text-align: center;
+        }
+        .start-screen h1 {
+            font-size: 42px;
+            color: #ffd700;
+            margin-bottom: 8px;
+            text-shadow: 0 0 60px rgba(255, 215, 0, 0.2);
+        }
+        .start-screen .sub {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 30px;
+        }
+        .start-screen .emoji-big {
+            font-size: 80px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .start-screen .controls-info {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 13px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 16px 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .start-screen .controls-info strong {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .start-btn {
+            background: linear-gradient(135deg, #ffd700, #f9a825);
+            border: none;
+            padding: 16px 48px;
+            border-radius: 30px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #0a0a1a;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 40px rgba(255, 215, 0, 0.25);
+            pointer-events: auto;
+            touch-action: manipulation;
+        }
+        .start-btn:active {
+            transform: scale(0.95);
+        }
+        .start-btn .small {
+            font-size: 13px;
+            font-weight: 400;
+            opacity: 0.6;
+            display: block;
+            margin-top: 2px;
+        }
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 26, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            text-align: center;
+        }
+        .game-over.show {
+            display: flex;
+        }
+        .game-over h1 {
+            font-size: 48px;
+            color: #ff6b6b;
+            margin-bottom: 4px;
+        }
+        .game-over .final-score {
+            font-size: 64px;
+            color: #ffd700;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        .game-over .final-label {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 16px;
+        }
+        .game-over .restart-btn {
+            margin-top: 30px;
+            background: linear-gradient(135deg, #4a90d9, #357abd);
+            border: none;
+            padding: 14px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 40px rgba(74, 144, 217, 0.25);
+            pointer-events: auto;
+            touch-action: manipulation;
+        }
+        .game-over .restart-btn:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 500px) {
+            .start-screen h1 { font-size: 28px; }
+            .score { font-size: 18px; padding: 6px 16px; top: 12px; }
+            .lives { font-size: 18px; top: 12px; right: 12px; padding: 4px 12px; }
+            .combo { font-size: 15px; top: 60px; }
+            .start-screen .emoji-big { font-size: 50px; }
+            .start-screen .controls-info { font-size: 11px; padding: 12px 16px; }
+            .start-btn { padding: 14px 32px; font-size: 17px; }
+            .game-over h1 { font-size: 32px; }
+            .game-over .final-score { font-size: 44px; }
+            .camera-status { font-size: 10px; padding: 4px 12px; bottom: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Канвас -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Интерфейс -->
+    <div class="ui" id="ui">
+        <div class="score">⭐ <span id="scoreDisplay">0</span></div>
+        <div class="combo" id="comboDisplay">🔥 Комбо x<span id="comboCount">0</span></div>
+        <div class="lives" id="livesDisplay">❤️❤️❤️</div>
+        <div class="camera-status" id="cameraStatus">📷 Камера: инициализация...</div>
+    </div>
+
+    <!-- Стартовый экран -->
+    <div class="start-screen" id="startScreen">
+        <span class="emoji-big">🚀</span>
+        <h1>Космический сборщик</h1>
+        <div class="sub">Управляй кораблём движениями руки</div>
+        <div class="controls-info">
+            <strong>✋ Как играть:</strong><br>
+            🖐️ Двигай рукой перед камерой — корабль летит за ней<br>
+            🌟 Собирай звёзды и планеты для очков<br>
+            💥 Избегай астероидов<br>
+            🔥 Комбо за быстрый сбор!
+        </div>
+        <button class="start-btn" id="startBtn">
+            ▶ Начать игру
+            <span class="small">🎥 Требуется доступ к камере</span>
+        </button>
+    </div>
+
+    <!-- Экран Game Over -->
+    <div class="game-over" id="gameOver">
+        <h1>💥 Игра окончена</h1>
+        <div class="final-label">Твой счёт</div>
+        <div class="final-score" id="finalScore">0</div>
+        <div style="color:rgba(255,255,255,0.3);font-size:14px;margin-top:4px;" id="finalCombo">Лучшее комбо: 0</div>
+        <button class="restart-btn" id="restartBtn">🔄 Играть снова</button>
+    </div>
+
+    <script>
+        // ================================================================
+        //  ИНИЦИАЛИЗАЦИЯ
+        // ================================================================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W, H, cx, cy;
+
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+            cx = W / 2;
+            cy = H / 2;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // ================================================================
+        //  DOM
+        // ================================================================
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const comboDisplay = document.getElementById('comboDisplay');
+        const comboCount = document.getElementById('comboCount');
+        const livesDisplay = document.getElementById('livesDisplay');
+        const cameraStatus = document.getElementById('cameraStatus');
+        const startScreen = document.getElementById('startScreen');
+        const startBtn = document.getElementById('startBtn');
+        const gameOver = document.getElementById('gameOver');
+        const finalScore = document.getElementById('finalScore');
+        const finalCombo = document.getElementById('finalCombo');
+        const restartBtn = document.getElementById('restartBtn');
+
+        // ================================================================
+        //  ИГРОВЫЕ ПЕРЕМЕННЫЕ
+        // ================================================================
+        let gameRunning = false;
+        let score = 0;
+        let lives = 3;
+        let combo = 0;
+        let maxCombo = 0;
+        let comboTimer = 0;
+        let shipX = cx;
+        let shipY = cy;
+
+        // Объекты
+        let stars = [];
+        let asteroids = [];
+        let particles = [];
+        let collectibles = [];
+
+        // Управление
+        let mouseX = cx;
+        let mouseY = cy;
+        let targetX = cx;
+        let targetY = cy;
+        let isUsingCamera = false;
+        let cameraActive = false;
+
+        // Камера
+        let video = null;
+        let motionData = { x: 0.5, y: 0.5, active: false };
+        let motionSmoothX = 0.5;
+        let motionSmoothY = 0.5;
+
+        // Таймеры
+        let spawnTimer = 0;
+        let asteroidTimer = 0;
+        let frameCount = 0;
+
+        // ================================================================
+        //  КАМЕРА
+        // ================================================================
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'user',
+                        width: { ideal: 320 },
+                        height: { ideal: 240 }
+                    }
+                });
+                video = document.createElement('video');
+                video.srcObject = stream;
+                await video.play();
+                cameraActive = true;
+                cameraStatus.textContent = '📷 Камера: ✅ активна! Двигай рукой';
+                cameraStatus.classList.add('active');
+                startBtn.textContent = '▶ Начать игру';
+                startBtn.querySelector('.small').textContent = '🎥 Камера готова!';
+                return true;
+            } catch (err) {
+                console.warn('Камера не доступна:', err);
+                cameraStatus.textContent = '📷 Камера: ❌ недоступна, используй мышь/палец';
+                startBtn.textContent = '▶ Начать игру (без камеры)';
+                startBtn.querySelector('.small').textContent = '🖱️ Управление мышью/пальцем';
+                return false;
+            }
+        }
+
+        function detectMotion() {
+            if (!video || !cameraActive) return;
+            const canvas2 = document.createElement('canvas');
+            const ctx2 = canvas2.getContext('2d');
+            canvas2.width = 80;
+            canvas2.height = 60;
+            ctx2.drawImage(video, 0, 0, canvas2.width, canvas2.height);
+            const imageData = ctx2.getImageData(0, 0, canvas2.width, canvas2.height);
+            const data = imageData.data;
+
+            // Простой детектор движения: анализируем яркость
+            let sum = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                sum += (data[i] + data[i + 1] + data[i + 2]) / 3;
+            }
+            const avg = sum / (canvas2.width * canvas2.height);
+
+            // Определяем движение по изменению яркости
+            if (window._lastAvg !== undefined) {
+                const diff = Math.abs(avg - window._lastAvg);
+                motionData.active = diff > 8;
+                if (motionData.active) {
+                    // Определяем направление движения
+                    // (упрощённо: по центру масс ярких пикселей)
+                    let cx2 = 0,
+                        cy2 = 0,
+                        count = 0;
+                    for (let y = 0; y < canvas2.height; y++) {
+                        for (let x = 0; x < canvas2.width; x++) {
+                            const idx = (y * canvas2.width + x) * 4;
+                            const bright = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+                            if (bright > 80) {
+                                cx2 += x;
+                                cy2 += y;
+                                count++;
+                            }
+                        }
+                    }
+                    if (count > 50) {
+                        cx2 /= count;
+                        cy2 /= count;
+                        motionData.x = cx2 / canvas2.width;
+                        motionData.y = cy2 / canvas2.height;
+                    }
+                }
+            }
+            window._lastAvg = avg;
+        }
+
+        // ================================================================
+        //  ИГРОВЫЕ ОБЪЕКТЫ
+        // ================================================================
+        function createStar() {
+            const size = 10 + Math.random() * 25;
+            const types = ['⭐', '🌟', '💫', '✨', '🌠'];
+            const colors = ['#ffd700', '#ff6bb5', '#4d96ff', '#6bcb77', '#ff9f43'];
+            const type = Math.floor(Math.random() * types.length);
+            return {
+                x: Math.random() * W,
+                y: -size,
+                size: size,
+                type: types[type],
+                color: colors[type],
+                speed: 1 + Math.random() * 2,
+                value: Math.floor(Math.random() * 5) + 5,
+                rotation: Math.random() * Math.PI * 2,
+                rotSpeed: (Math.random() - 0.5) * 0.05,
+                glow: 0
+            };
+        }
+
+        function createAsteroid() {
+            const size = 20 + Math.random() * 35;
+            return {
+                x: Math.random() * W,
+                y: -size,
+                size: size,
+                speed: 0.5 + Math.random() * 1.5,
+                rotation: Math.random() * Math.PI * 2,
+                rotSpeed: (Math.random() - 0.5) * 0.03,
+                points: Math.floor(Math.random() * 8) + 6,
+                color: `hsl(${20 + Math.random() * 20}, 20%, ${30 + Math.random() * 30}%)`
+            };
+        }
+
+        function createCollectible() {
+            const types = ['🍎', '🍌', '🍇', '🍊', '🍓', '🍉', '🍒', '🥝'];
+            return {
+                x: Math.random() * W,
+                y: -30,
+                size: 25,
+                type: types[Math.floor(Math.random() * types.length)],
+                speed: 0.8 + Math.random() * 1.2,
+                value: 10 + Math.floor(Math.random() * 10),
+                rotation: 0,
+                rotSpeed: (Math.random() - 0.5) * 0.06
+            };
+        }
+
+        function createParticles(x, y, color, count = 15) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1 + Math.random() * 4;
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 1,
+                    life: 1,
+                    decay: 0.01 + Math.random() * 0.03,
+                    size: 2 + Math.random() * 6,
+                    color: color,
+                    gravity: 0.03
+                });
+            }
+        }
+
+        // ================================================================
+        //  УПРАВЛЕНИЕ
+        // ================================================================
+        function updateShipPosition() {
+            // Сглаживание позиции
+            if (isUsingCamera && cameraActive) {
+                // Используем данные с камеры
+                motionSmoothX += (motionData.x - motionSmoothX) * 0.15;
+                motionSmoothY += (motionData.y - motionSmoothY) * 0.15;
+                targetX = motionSmoothX * W;
+                targetY = motionSmoothY * H;
+                // Ограничиваем краями
+                targetX = Math.max(30, Math.min(W - 30, targetX));
+                targetY = Math.max(30, Math.min(H - 30, targetY));
+            } else {
+                // Используем мышь/палец
+                targetX = Math.max(30, Math.min(W - 30, mouseX));
+                targetY = Math.max(30, Math.min(H - 30, mouseY));
+            }
+
+            shipX += (targetX - shipX) * 0.12;
+            shipY += (targetY - shipY) * 0.12;
+        }
+
+        // ================================================================
+        //  ОБНОВЛЕНИЕ ИГРЫ
+        // ================================================================
+        function updateGame() {
+            if (!gameRunning) return;
+            frameCount++;
+
+            // Обновляем позицию корабля
+            updateShipPosition();
+
+            // Комбо таймер
+            if (comboTimer > 0) {
+                comboTimer--;
+                if (comboTimer === 0) {
+                    combo = 0;
+                    comboDisplay.classList.remove('active');
+                }
+            }
+
+            // Спавн звёзд
+            spawnTimer++;
+            const spawnRate = Math.max(15, 40 - Math.floor(score / 100));
+            if (spawnTimer > spawnRate) {
+                spawnTimer = 0;
+                if (Math.random() < 0.7) {
+                    stars.push(createStar());
+                } else if (Math.random() < 0.5) {
+                    collectibles.push(createCollectible());
+                }
+            }
+
+            // Спавн астероидов (увеличивается со временем)
+            asteroidTimer++;
+            const astRate = Math.max(40, 80 - Math.floor(score / 50));
+            if (asteroidTimer > astRate && stars.length < 30) {
+                asteroidTimer = 0;
+                if (Math.random() < 0.3 + score / 500) {
+                    asteroids.push(createAsteroid());
+                }
+            }
+
+            // Обновляем звёзды
+            for (let i = stars.length - 1; i >= 0; i--) {
+                const s = stars[i];
+                s.y += s.speed;
+                s.rotation += s.rotSpeed;
+                s.glow = 0.5 + 0.5 * Math.sin(frameCount * 0.05 + i);
+
+                // Проверка сбора
+                const dx = s.x - shipX;
+                const dy = s.y - shipY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 35 + s.size / 2) {
+                    score += s.value;
+                    combo++;
+                    comboTimer = 60;
+                    if (combo > maxCombo) maxCombo = combo;
+                    createParticles(s.x, s.y, s.color, 10);
+                    stars.splice(i, 1);
+                    updateUI();
+                    continue;
+                }
+
+                // За пределами экрана
+                if (s.y > H + 50) {
+                    stars.splice(i, 1);
+                }
+            }
+
+            // Обновляем коллекционные предметы
+            for (let i = collectibles.length - 1; i >= 0; i--) {
+                const c = collectibles[i];
+                c.y += c.speed;
+                c.rotation += c.rotSpeed;
+
+                const dx = c.x - shipX;
+                const dy = c.y - shipY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 40) {
+                    score += c.value * 2;
+                    combo += 2;
+                    comboTimer = 80;
+                    if (combo > maxCombo) maxCombo = combo;
+                    createParticles(c.x, c.y, '#ffd700', 20);
+                    collectibles.splice(i, 1);
+                    updateUI();
+                    continue;
+                }
+
+                if (c.y > H + 50) {
+                    collectibles.splice(i, 1);
+                }
+            }
+
+            // Обновляем астероиды
+            for (let i = asteroids.length - 1; i >= 0; i--) {
+                const a = asteroids[i];
+                a.y += a.speed;
+                a.rotation += a.rotSpeed;
+
+                const dx = a.x - shipX;
+                const dy = a.y - shipY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 30 + a.size / 2) {
+                    // Столкновение!
+                    createParticles(a.x, a.y, '#ff4444', 30);
+                    lives--;
+                    combo = 0;
+                    comboTimer = 0;
+                    comboDisplay.classList.remove('active');
+                    updateUI();
+                    asteroids.splice(i, 1);
+
+                    if (lives <= 0) {
+                        gameOverScreen();
+                        return;
+                    }
+                    continue;
+                }
+
+                if (a.y > H + 50) {
+                    asteroids.splice(i, 1);
+                }
+            }
+
+            // Обновляем частицы
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += p.gravity;
+                p.life -= p.decay;
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Ограничиваем количество объектов
+            if (stars.length > 100) stars.splice(0, stars.length - 100);
+            if (asteroids.length > 50) asteroids.splice(0, asteroids.length - 50);
+            if (particles.length > 200) particles.splice(0, particles.length - 200);
+        }
+
+        // ================================================================
+        //  ОТРИСОВКА
+        // ================================================================
+        function drawGame() {
+            // Фон с градиентом и звёздами
+            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.8);
+            grad.addColorStop(0, '#1a1a3e');
+            grad.addColorStop(0.5, '#0f0f2a');
+            grad.addColorStop(1, '#050510');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Фоновые звёзды (мелкие точки)
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            for (let i = 0; i < 60; i++) {
+                const x = (i * 137 + i * i * 3) % W;
+                const y = (i * 251 + i * i * 2 + frameCount * 0.02) % H;
+                const s = 0.5 + (i % 3) * 0.5;
+                ctx.beginPath();
+                ctx.arc(x, y, s, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Частицы
+            for (const p of particles) {
+                ctx.globalAlpha = p.life;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // Астероиды
+            for (const a of asteroids) {
+                ctx.save();
+                ctx.translate(a.x, a.y);
+                ctx.rotate(a.rotation);
+                ctx.beginPath();
+                const pts = a.points;
+                for (let i = 0; i < pts; i++) {
+                    const angle = (i / pts) * Math.PI * 2;
+                    const r = a.size * (0.7 + 0.3 * Math.sin(i * 2.7 + 1.2));
+                    if (i === 0) ctx.moveTo(Math.cos(angle) * r, Math.sin(angle) * r);
+                    else ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+                }
+                ctx.closePath();
+                ctx.fillStyle = a.color;
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Звёзды и коллекционные предметы
+            for (const s of stars) {
+                ctx.save();
+                ctx.translate(s.x, s.y);
+                ctx.rotate(s.rotation);
+                const glow = s.glow;
+                // Свечение
+                const grad2 = ctx.createRadialGradient(0, 0, 0, 0, 0, s.size * 1.5);
+                grad2.addColorStop(0, `rgba(255,255,255,${0.1 * glow})`);
+                grad2.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.fillStyle = grad2;
+                ctx.beginPath();
+                ctx.arc(0, 0, s.size * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.font = `${s.size}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(s.type, 0, 0);
+                ctx.restore();
+            }
+
+            for (const c of collectibles) {
+                ctx.save();
+                ctx.translate(c.x, c.y);
+                ctx.rotate(c.rotation);
+                // Свечение
+                const grad2 = ctx.createRadialGradient(0, 0, 0, 0, 0, 40);
+                grad2.addColorStop(0, 'rgba(255,215,0,0.15)');
+                grad2.addColorStop(1, 'rgba(255,215,0,0)');
+                ctx.fillStyle = grad2;
+                ctx.beginPath();
+                ctx.arc(0, 0, 40, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.font = `${c.size}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(c.type, 0, 0);
+                ctx.restore();
+            }
+
+            // Корабль (игрок)
+            ctx.save();
+            ctx.translate(shipX, shipY);
+            // Свечение корабля
+            const glowShip = ctx.createRadialGradient(0, 0, 0, 0, 0, 60);
+            glowShip.addColorStop(0, 'rgba(0, 200, 255, 0.15)');
+            glowShip.addColorStop(1, 'rgba(0, 200, 255, 0)');
+            ctx.fillStyle = glowShip;
+            ctx.beginPath();
+            ctx.arc(0, 0, 60, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Треугольник (корабль)
+            const angle = Math.atan2(targetY - shipY, targetX - shipX);
+            ctx.rotate(angle + Math.PI / 2);
+
+            ctx.beginPath();
+            ctx.moveTo(0, -28);
+            ctx.lineTo(-18, 20);
+            ctx.lineTo(18, 20);
+            ctx.closePath();
+            const gradShip = ctx.createLinearGradient(0, -28, 0, 20);
+            gradShip.addColorStop(0, '#4d96ff');
+            gradShip.addColorStop(0.5, '#7ab7ef');
+            gradShip.addColorStop(1, '#2a6a9a');
+            ctx.fillStyle = gradShip;
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Огонь из двигателя
+            ctx.beginPath();
+            ctx.moveTo(-10, 20);
+            ctx.quadraticCurveTo(0, 20 + 8 + Math.random() * 6, 10, 20);
+            ctx.fillStyle = `rgba(255, 150, 50, ${0.5 + Math.random() * 0.3})`;
+            ctx.fill();
+
+            ctx.restore();
+
+            // Индикатор комбо
+            if (combo > 0 && comboTimer > 0) {
+                comboDisplay.classList.add('active');
+                comboCount.textContent = combo;
+            }
+        }
+
+        // ================================================================
+        //  ОБНОВЛЕНИЕ UI
+        // ================================================================
+        function updateUI() {
+            scoreDisplay.textContent = score;
+            let hearts = '';
+            for (let i = 0; i < lives; i++) hearts += '❤️';
+            if (lives === 0) hearts = '💔💔💔';
+            livesDisplay.textContent = hearts || '💔';
+
+            if (combo > 0 && comboTimer > 0) {
+                comboDisplay.classList.add('active');
+                comboCount.textContent = combo;
+            }
+        }
+
+        // ================================================================
+        //  GAME OVER
+        // ================================================================
+        function gameOverScreen() {
+            gameRunning = false;
+            gameOver.classList.add('show');
+            finalScore.textContent = score;
+            finalCombo.textContent = `Лучшее комбо: ${maxCombo}`;
+            if (navigator.vibrate) navigator.vibrate([50, 100, 50, 100, 200]);
+        }
+
+        // ================================================================
+        //  ОСНОВНОЙ ЦИКЛ
+        // ================================================================
+        function gameLoop() {
+            if (cameraActive && video) {
+                detectMotion();
+            }
+
+            updateGame();
+            drawGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ================================================================
+        //  ЗАПУСК ИГРЫ
+        // ================================================================
+        function startGame() {
+            // Сброс
+            score = 0;
+            lives = 3;
+            combo = 0;
+            maxCombo = 0;
+            comboTimer = 0;
+            stars = [];
+            asteroids = [];
+            particles = [];
+            collectibles = [];
+            spawnTimer = 0;
+            asteroidTimer = 0;
+            shipX = cx;
+            shipY = cy;
+            targetX = cx;
+            targetY = cy;
+
+            gameRunning = true;
+            startScreen.style.display = 'none';
+            gameOver.classList.remove('show');
+            updateUI();
+            comboDisplay.classList.remove('active');
+        }
+
+        // ================================================================
+        //  СОБЫТИЯ
+        // ================================================================
+        // Мышь
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            isUsingCamera = false;
+        });
+
+        // Тач
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            mouseX = touch.clientX;
+            mouseY = touch.clientY;
+            isUsingCamera = false;
+        }, { passive: false });
+
+        canvas.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            mouseX = touch.clientX;
+            mouseY = touch.clientY;
+            isUsingCamera = false;
+        });
+
+        // Кнопки
+        startBtn.addEventListener('click', async () => {
+            if (!cameraActive) {
+                await initCamera();
+            }
+            startGame();
+        });
+
+        restartBtn.addEventListener('click', () => {
+            startGame();
+        });
+
+        // ================================================================
+        //  ИНИЦИАЛИЗАЦИЯ
+        // ================================================================
+        async function init() {
+            await initCamera();
+            // Запускаем цикл
+            gameLoop();
+
+            // Если камера не активна, используем мышь по умолчанию
+            if (!cameraActive) {
+                isUsingCamera = false;
+                cameraStatus.textContent = '📷 Камера: ❌ используй мышь/палец';
+            } else {
+                isUsingCamera = true;
+                // Запускаем детекцию движения
+                setInterval(() => {
+                    if (cameraActive && video) detectMotion();
+                }, 50);
+            }
+
+            console.log('🚀 Космический сборщик загружен!');
+        }
+
+        init();
+    </script>
+</body>
+</html>
