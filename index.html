@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🌌 Млечный Путь 3D</title>
+    <title>✨ Космическая одиссея</title>
     <style>
         * {
             margin: 0;
@@ -17,127 +17,173 @@
             width: 100vw;
             font-family: -apple-system, Arial, sans-serif;
             touch-action: none;
+            position: fixed;
         }
         canvas {
             display: block;
             width: 100%;
             height: 100%;
         }
-        
-        /* Управление */
+
         .controls {
             position: fixed;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 15px;
+            gap: 12px;
             z-index: 10;
             background: rgba(0, 0, 0, 0.7);
             padding: 12px 20px;
             border-radius: 30px;
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             flex-wrap: wrap;
             justify-content: center;
         }
         .controls button {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
             padding: 8px 18px;
             border-radius: 20px;
             font-size: 14px;
             cursor: pointer;
             transition: all 0.3s;
             touch-action: manipulation;
-            min-width: 50px;
+            min-width: 44px;
         }
         .controls button:active {
             transform: scale(0.9);
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
         }
         .controls button.active {
-            background: rgba(255, 215, 0, 0.3);
+            background: rgba(255, 215, 0, 0.2);
             border-color: #ffd700;
             color: #ffd700;
         }
         .controls .zoom-group {
             display: flex;
-            gap: 5px;
+            gap: 4px;
             align-items: center;
         }
         .controls .zoom-group button {
             font-size: 18px;
-            padding: 8px 14px;
-            min-width: 40px;
+            padding: 6px 12px;
+            min-width: 36px;
+        }
+        .controls .zoom-group span {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            min-width: 30px;
+            text-align: center;
         }
         .controls .hint {
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 11px;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 10px;
             display: flex;
             align-items: center;
-            padding: 0 5px;
+            padding: 0 4px;
         }
-        
+
         .info {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.15);
             font-size: 12px;
             z-index: 10;
             text-align: center;
             background: rgba(0, 0, 0, 0.4);
-            padding: 6px 16px;
+            padding: 6px 18px;
             border-radius: 20px;
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.04);
             pointer-events: none;
             white-space: nowrap;
+            letter-spacing: 1px;
         }
-        
+        .info strong {
+            color: rgba(255, 215, 0, 0.4);
+        }
+
+        .stats {
+            position: fixed;
+            bottom: 95px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 11px;
+            z-index: 10;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 14px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            pointer-events: none;
+            letter-spacing: 0.5px;
+            display: flex;
+            gap: 16px;
+        }
+        .stats span {
+            color: rgba(255, 255, 255, 0.3);
+        }
+        .stats .num {
+            color: rgba(255, 215, 0, 0.5);
+        }
+
         @media (max-width: 600px) {
             .controls {
                 bottom: 15px;
                 padding: 10px 14px;
-                gap: 10px;
+                gap: 8px;
                 border-radius: 20px;
-                flex-wrap: wrap;
                 width: 95%;
                 max-width: 400px;
             }
             .controls button {
                 font-size: 12px;
-                padding: 6px 12px;
-                min-width: 40px;
+                padding: 5px 10px;
+                min-width: 36px;
             }
             .controls .zoom-group button {
-                font-size: 16px;
-                padding: 6px 10px;
-                min-width: 35px;
+                font-size: 15px;
+                padding: 5px 8px;
+                min-width: 30px;
             }
             .controls .hint {
-                font-size: 9px;
+                font-size: 8px;
             }
             .info {
                 font-size: 10px;
-                top: 10px;
+                top: 12px;
                 padding: 4px 12px;
+            }
+            .stats {
+                bottom: 80px;
+                font-size: 9px;
+                padding: 3px 10px;
+                gap: 10px;
             }
         }
         @media (orientation: landscape) and (max-height: 500px) {
             .controls {
                 bottom: 10px;
-                padding: 8px 12px;
-                gap: 8px;
+                padding: 6px 10px;
+                gap: 6px;
             }
             .controls button {
-                font-size: 11px;
-                padding: 4px 10px;
+                font-size: 10px;
+                padding: 4px 8px;
+                min-width: 30px;
+            }
+            .stats {
+                bottom: 65px;
+                font-size: 8px;
+                padding: 2px 8px;
+                gap: 8px;
             }
             .info {
                 top: 8px;
@@ -149,26 +195,35 @@
 </head>
 <body>
     <canvas id="canvas"></canvas>
-    
-    <div class="info">🌌 Млечный Путь • Тащи для вращения</div>
-    
+
+    <div class="info">✦ <strong>Космическая одиссея</strong> ✦ тащи для вращения</div>
+
+    <div class="stats">
+        <span>⭐ <span class="num" id="starCount">0</span></span>
+        <span>🪐 <span class="num" id="planetCount">0</span></span>
+        <span>🌀 <span class="num" id="asteroidCount">0</span></span>
+        <span>🌌 <span class="num" id="nebulaCount">0</span></span>
+    </div>
+
     <div class="controls">
-        <button id="pauseBtn" class="active">⏸️ Пауза</button>
-        
+        <button id="pauseBtn" class="active">⏸️</button>
         <div class="zoom-group">
             <button id="zoomOut">➖</button>
-            <span style="color:rgba(255,255,255,0.5);font-size:12px;min-width:30px;text-align:center;" id="zoomLevel">1.0</span>
+            <span id="zoomLevel">1.0</span>
             <button id="zoomIn">➕</button>
-            <button id="resetBtn" style="font-size:16px;padding:6px 12px;">⟲</button>
+            <button id="resetBtn" style="font-size:14px;padding:6px 10px;">⟲</button>
         </div>
-        
+        <button id="speedBtn">🚀 1x</button>
         <span class="hint">👆 Тащи</span>
     </div>
 
     <script>
-        // ============================================================
-        //  🌌 МЛЕЧНЫЙ ПУТЬ 3D
-        // ============================================================
+        // ================================================================
+        //  ═══════════════════════════════════════════════════════════════
+        //  🌌  КОСМИЧЕСКАЯ ОДИССЕЯ  —  ПОЛНАЯ ВСЕЛЕННАЯ
+        //  ═══════════════════════════════════════════════════════════════
+        // ================================================================
+
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
 
@@ -183,53 +238,62 @@
         resize();
         window.addEventListener('resize', resize);
 
-        // ============================================================
+        // ================================================================
         //  УПРАВЛЕНИЕ
-        // ============================================================
-        let rotX = 0.5;
-        let rotY = 0.3;
+        // ================================================================
+        let rotX = 0.6;
+        let rotY = 0.4;
         let targetRotX = rotX;
         let targetRotY = rotY;
         let zoom = 1.0;
         let targetZoom = 1.0;
         let isPaused = false;
         let isDragging = false;
-        let lastX = 0, lastY = 0;
+        let lastX = 0,
+            lastY = 0;
+        let speedMultiplier = 1;
+        const speedLevels = [0.3, 0.6, 1, 1.8, 3];
+        let speedIndex = 2;
 
         const pauseBtn = document.getElementById('pauseBtn');
         const zoomInBtn = document.getElementById('zoomIn');
         const zoomOutBtn = document.getElementById('zoomOut');
         const resetBtn = document.getElementById('resetBtn');
         const zoomLevel = document.getElementById('zoomLevel');
+        const speedBtn = document.getElementById('speedBtn');
 
         pauseBtn.addEventListener('click', () => {
             isPaused = !isPaused;
-            pauseBtn.textContent = isPaused ? '▶️ Играть' : '⏸️ Пауза';
+            pauseBtn.textContent = isPaused ? '▶️' : '⏸️';
             pauseBtn.classList.toggle('active');
         });
 
         zoomInBtn.addEventListener('click', () => {
-            targetZoom = Math.min(2.5, targetZoom + 0.15);
+            targetZoom = Math.min(3, targetZoom + 0.15);
             updateZoom();
         });
-
         zoomOutBtn.addEventListener('click', () => {
-            targetZoom = Math.max(0.3, targetZoom - 0.15);
+            targetZoom = Math.max(0.2, targetZoom - 0.15);
+            updateZoom();
+        });
+        resetBtn.addEventListener('click', () => {
+            targetRotX = 0.6;
+            targetRotY = 0.4;
+            targetZoom = 1;
             updateZoom();
         });
 
-        resetBtn.addEventListener('click', () => {
-            targetRotX = 0.5;
-            targetRotY = 0.3;
-            targetZoom = 1.0;
-            updateZoom();
+        speedBtn.addEventListener('click', () => {
+            speedIndex = (speedIndex + 1) % speedLevels.length;
+            speedMultiplier = speedLevels[speedIndex];
+            speedBtn.textContent = `🚀 ${speedMultiplier}x`;
         });
 
         function updateZoom() {
             zoomLevel.textContent = targetZoom.toFixed(1);
         }
 
-        // Управление пальцем/мышью
+        // Управление
         function onStart(x, y) {
             isDragging = true;
             lastX = x;
@@ -240,16 +304,14 @@
             if (!isDragging) return;
             const dx = x - lastX;
             const dy = y - lastY;
-            targetRotY += dx * 0.006;
-            targetRotX += dy * 0.006;
-            targetRotX = Math.max(-1.8, Math.min(1.8, targetRotX));
+            targetRotY += dx * 0.005;
+            targetRotX += dy * 0.005;
+            targetRotX = Math.max(-2, Math.min(2, targetRotX));
             lastX = x;
             lastY = y;
         }
 
-        function onEnd() {
-            isDragging = false;
-        }
+        function onEnd() { isDragging = false; }
 
         let lastPinchDist = 0;
 
@@ -280,7 +342,7 @@
             } else if (e.touches.length === 2) {
                 const dist = getPinchDist(e.touches);
                 const delta = dist - lastPinchDist;
-                targetZoom = Math.max(0.3, Math.min(2.5, targetZoom + delta * 0.01));
+                targetZoom = Math.max(0.2, Math.min(3, targetZoom + delta * 0.01));
                 updateZoom();
                 lastPinchDist = dist;
             }
@@ -294,299 +356,429 @@
 
         canvas.addEventListener('wheel', (e) => {
             e.preventDefault();
-            const delta = e.deltaY > 0 ? -0.05 : 0.05;
-            targetZoom = Math.max(0.3, Math.min(2.5, targetZoom + delta));
+            targetZoom = Math.max(0.2, Math.min(3, targetZoom + (e.deltaY > 0 ? -0.06 : 0.06)));
             updateZoom();
         }, { passive: false });
 
-        // ============================================================
+        // ================================================================
         //  3D МАТЕМАТИКА
-        // ============================================================
+        // ================================================================
         function rotate3D(x, y, z, rx, ry) {
-            const cosX = Math.cos(rx);
-            const sinX = Math.sin(rx);
+            const cosX = Math.cos(rx),
+                sinX = Math.sin(rx);
             let y1 = y * cosX - z * sinX;
             let z1 = y * sinX + z * cosX;
-            
-            const cosY = Math.cos(ry);
-            const sinY = Math.sin(ry);
-            let x1 = x * cosY + z1 * sinY;
-            let z2 = -x * sinY + z1 * cosY;
-            
-            return { x: x1, y: y1, z: z2 };
+            const cosY = Math.cos(ry),
+                sinY = Math.sin(ry);
+            return { x: x * cosY + z1 * sinY, y: y1, z: -x * sinY + z1 * cosY };
         }
 
         function project(x, y, z, scale) {
-            const dist = 7;
-            const fov = 350;
+            const dist = 8;
+            const fov = 380;
             const factor = fov / (dist + z);
-            return {
-                sx: cx + x * scale * factor,
-                sy: cy + y * scale * factor,
-                z: z,
-                factor: factor
-            };
+            return { sx: cx + x * scale * factor, sy: cy + y * scale * factor, z: z };
         }
 
-        // ============================================================
-        //  СОЗДАНИЕ ГАЛАКТИКИ
-        // ============================================================
+        // ================================================================
+        //  ГЕНЕРАЦИЯ ВСЕЛЕННОЙ
+        // ================================================================
+
+        // --- ГАЛАКТИКА (спиральная) ---
         function createGalaxy() {
             const stars = [];
-            const numStars = 4000;
-            const arms = 4;
-            const armSpread = 0.4;
-            const radius = 8;
-            
+            const numStars = 5000;
+            const arms = 5;
+            const radius = 9;
+
             for (let i = 0; i < numStars; i++) {
                 const arm = Math.floor(Math.random() * arms);
-                const angleOffset = (arm / arms) * Math.PI * 2;
-                const dist = Math.pow(Math.random(), 0.6) * radius;
-                const angle = dist * 0.8 + angleOffset + (Math.random() - 0.5) * armSpread * (1 + dist * 0.1);
-                
+                const dist = Math.pow(Math.random(), 0.5) * radius;
+                const angle = dist * 0.9 + (arm / arms) * Math.PI * 2 + (Math.random() - 0.5) * 0.3 * (1 + dist * 0.1);
                 const x = Math.cos(angle) * dist;
                 const z = Math.sin(angle) * dist;
-                const y = (Math.random() - 0.5) * 0.3 * (1 + dist * 0.1);
-                
-                const brightness = 0.3 + 0.7 * (1 - dist / radius);
-                const size = 0.5 + Math.random() * 2.5 * brightness;
-                const color = Math.random() > 0.7 ? '#ffd700' : 
-                             Math.random() > 0.5 ? '#ffffff' : 
-                             '#88ccff';
-                const opacity = 0.3 + 0.7 * brightness * (0.5 + Math.random() * 0.5);
-                
+                const y = (Math.random() - 0.5) * 0.2 * (1 + dist * 0.08);
+
+                const brightness = 0.2 + 0.8 * (1 - dist / radius);
+                const size = 0.3 + Math.random() * 2.2 * brightness;
+                const rnd = Math.random();
+                const color = rnd > 0.75 ? '#ffd700' : rnd > 0.5 ? '#ffffff' : '#88ccff';
+                const opacity = 0.2 + 0.8 * brightness * (0.4 + Math.random() * 0.6);
+
                 stars.push({ x, y, z, size, color, opacity, brightness });
             }
-            
-            for (let i = 0; i < 800; i++) {
-                const dist = Math.pow(Math.random(), 0.8) * 1.2;
+
+            // Ядро
+            for (let i = 0; i < 1200; i++) {
+                const dist = Math.pow(Math.random(), 0.7) * 1.5;
                 const angle = Math.random() * Math.PI * 2;
                 const x = Math.cos(angle) * dist;
                 const z = Math.sin(angle) * dist;
-                const y = (Math.random() - 0.5) * 0.2;
-                const size = 1 + Math.random() * 3;
-                const brightness = 0.6 + 0.4 * (1 - dist / 1.2);
+                const y = (Math.random() - 0.5) * 0.15;
+                const size = 0.5 + Math.random() * 3.5;
                 stars.push({
-                    x, y, z, size,
+                    x,
+                    y,
+                    z,
+                    size,
                     color: Math.random() > 0.5 ? '#ffdd77' : '#ffaa44',
-                    opacity: 0.5 + 0.5 * brightness,
+                    opacity: 0.6 + 0.4 * (1 - dist / 1.5),
                     brightness: 1
                 });
             }
-            
             return stars;
         }
 
-        const galaxy = createGalaxy();
-
-        // ============================================================
-        //  ПЛАНЕТЫ
-        // ============================================================
+        // --- ПЛАНЕТЫ с разнообразием ---
         function createPlanets() {
-            const planets = [];
             const data = [
-                { name: 'Меркурий', size: 0.15, dist: 1.2, color: '#b0a8a0', speed: 2.0 },
-                { name: 'Венера', size: 0.25, dist: 1.8, color: '#e8cda0', speed: 1.5 },
-                { name: 'Земля', size: 0.28, dist: 2.5, color: '#4488ff', speed: 1.2 },
-                { name: 'Марс', size: 0.22, dist: 3.3, color: '#e07040', speed: 1.0 },
-                { name: 'Юпитер', size: 0.6, dist: 4.8, color: '#d4a06a', speed: 0.6 },
-                { name: 'Сатурн', size: 0.5, dist: 6.5, color: '#e8d090', speed: 0.45, hasRing: true },
-                { name: 'Уран', size: 0.4, dist: 8.2, color: '#88ccdd', speed: 0.3 },
-                { name: 'Нептун', size: 0.38, dist: 9.8, color: '#4466aa', speed: 0.2 }
+                { name: 'Меркурий', size: 0.12, dist: 1.3, color: '#b0a8a0', speed: 2.2, tilt: 0.1 },
+                { name: 'Венера', size: 0.22, dist: 1.9, color: '#e8cda0', speed: 1.7, tilt: 0.2 },
+                { name: 'Земля', size: 0.25, dist: 2.7, color: '#4488ff', speed: 1.3, tilt: 0.1 },
+                { name: 'Марс', size: 0.2, dist: 3.5, color: '#e07040', speed: 1.1, tilt: 0.15 },
+                { name: 'Юпитер', size: 0.55, dist: 5.0, color: '#d4a06a', speed: 0.7, tilt: 0.05 },
+                { name: 'Сатурн', size: 0.45, dist: 6.8, color: '#e8d090', speed: 0.5, tilt: 0.2, ring: true },
+                { name: 'Уран', size: 0.35, dist: 8.5, color: '#88ccdd', speed: 0.35, tilt: 0.4 },
+                { name: 'Нептун', size: 0.33, dist: 10.2, color: '#4466aa', speed: 0.25, tilt: 0.3 }
             ];
-            
-            for (const p of data) {
-                const angle = Math.random() * Math.PI * 2;
-                planets.push({
-                    ...p,
-                    angle: angle,
-                    orbitTilt: (Math.random() - 0.5) * 0.3,
-                    yOffset: (Math.random() - 0.5) * 0.5,
-                    orbitSpeed: p.speed * 0.3
-                });
-            }
-            return planets;
+            return data.map(p => ({
+                ...p,
+                angle: Math.random() * Math.PI * 2,
+                orbitSpeed: p.speed * 0.25,
+                yOff: (Math.random() - 0.5) * 0.4
+            }));
         }
 
-        const planets = createPlanets();
-
-        // ============================================================
-        //  ТУМАННОСТИ
-        // ============================================================
-        function createNebulae() {
-            const nebulae = [];
-            const colors = ['#ff446688', '#4488ff66', '#ff66aa44', '#66ffaa44', '#aa66ff44'];
-            for (let i = 0; i < 12; i++) {
+        // --- АСТЕРОИДНЫЙ ПОЯС ---
+        function createAsteroidBelt() {
+            const belt = [];
+            for (let i = 0; i < 600; i++) {
+                const dist = 3.8 + Math.random() * 1.2;
                 const angle = Math.random() * Math.PI * 2;
-                const dist = 6 + Math.random() * 8;
-                nebulae.push({
+                const x = Math.cos(angle) * dist;
+                const z = Math.sin(angle) * dist;
+                const y = (Math.random() - 0.5) * 0.15;
+                const size = 0.5 + Math.random() * 1.8;
+                belt.push({
+                    x,
+                    y,
+                    z,
+                    size,
+                    angle: angle,
+                    speed: 0.2 + Math.random() * 0.3,
+                    color: `hsl(${30 + Math.random() * 20}, 15%, ${40 + Math.random() * 30}%)`,
+                    points: 4 + Math.floor(Math.random() * 6)
+                });
+            }
+            return belt;
+        }
+
+        // --- ТУМАННОСТИ (цветные облака) ---
+        function createNebulae() {
+            const colors = ['#ff446688', '#4488ff66', '#ff66aa44', '#66ffaa44', '#aa66ff44', '#ff884466'];
+            const neb = [];
+            for (let i = 0; i < 18; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 4 + Math.random() * 10;
+                neb.push({
                     x: Math.cos(angle) * dist,
                     z: Math.sin(angle) * dist,
-                    y: (Math.random() - 0.5) * 2,
-                    size: 2 + Math.random() * 4,
+                    y: (Math.random() - 0.5) * 3,
+                    size: 1.5 + Math.random() * 5,
                     color: colors[Math.floor(Math.random() * colors.length)],
-                    opacity: 0.02 + Math.random() * 0.03
+                    opacity: 0.015 + Math.random() * 0.03,
+                    pulse: Math.random() * Math.PI * 2,
+                    pulseSpeed: 0.2 + Math.random() * 0.3
                 });
             }
-            return nebulae;
+            return neb;
         }
 
-        const nebulae = createNebulae();
+        // --- ДАЛЬНИЕ ЗВЁЗДЫ (фон) ---
+        function createBackgroundStars() {
+            const bg = [];
+            for (let i = 0; i < 800; i++) {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                const r = 25 + Math.random() * 30;
+                bg.push({
+                    x: r * Math.sin(phi) * Math.cos(theta),
+                    y: r * Math.sin(phi) * Math.sin(theta),
+                    z: r * Math.cos(phi),
+                    size: 0.3 + Math.random() * 1.2,
+                    opacity: 0.2 + Math.random() * 0.6
+                });
+            }
+            return bg;
+        }
 
-        // ============================================================
+        // --- МЕРЦАЮЩИЕ ЗВЁЗДЫ (передний план) ---
+        function createTwinklingStars() {
+            const tw = [];
+            for (let i = 0; i < 200; i++) {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                const r = 12 + Math.random() * 15;
+                tw.push({
+                    x: r * Math.sin(phi) * Math.cos(theta),
+                    y: r * Math.sin(phi) * Math.sin(theta),
+                    z: r * Math.cos(phi),
+                    size: 0.8 + Math.random() * 2.5,
+                    phase: Math.random() * Math.PI * 2,
+                    speed: 0.5 + Math.random() * 1.5,
+                    color: Math.random() > 0.7 ? '#ffd700' : '#ffffff'
+                });
+            }
+            return tw;
+        }
+
+        const galaxy = createGalaxy();
+        const planets = createPlanets();
+        const asteroidBelt = createAsteroidBelt();
+        const nebulae = createNebulae();
+        const bgStars = createBackgroundStars();
+        const twinklingStars = createTwinklingStars();
+
+        // ================================================================
+        //  СТАТИСТИКА
+        // ================================================================
+        document.getElementById('starCount').textContent = galaxy.length;
+        document.getElementById('planetCount').textContent = planets.length;
+        document.getElementById('asteroidCount').textContent = asteroidBelt.length;
+        document.getElementById('nebulaCount').textContent = nebulae.length;
+
+        // ================================================================
         //  ОТРИСОВКА
-        // ============================================================
+        // ================================================================
         let time = 0;
 
         function draw() {
-            time += 0.008;
-            
-            rotX += (targetRotX - rotX) * 0.06;
-            rotY += (targetRotY - rotY) * 0.06;
+            time += 0.008 * speedMultiplier;
+
+            rotX += (targetRotX - rotX) * 0.05;
+            rotY += (targetRotY - rotY) * 0.05;
             zoom += (targetZoom - zoom) * 0.08;
 
-            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.8);
-            grad.addColorStop(0, '#0a0a2a');
-            grad.addColorStop(0.5, '#050515');
+            // Фон
+            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.9);
+            grad.addColorStop(0, '#0a0a2e');
+            grad.addColorStop(0.3, '#060620');
+            grad.addColorStop(0.7, '#030312');
             grad.addColorStop(1, '#000000');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, W, H);
 
-            const scale = Math.min(W, H) * 0.035 * zoom;
-            const rotYmain = isPaused ? rotY : rotY + time * 0.008;
-            const rotXmain = isPaused ? rotX : rotX + time * 0.004;
+            const scale = Math.min(W, H) * 0.032 * zoom;
+            const rotYmain = isPaused ? rotY : rotY + time * 0.006;
+            const rotXmain = isPaused ? rotX : rotX + time * 0.003;
 
-            // Туманности
-            for (const n of nebulae) {
-                const r = rotate3D(n.x, n.y, n.z, rotXmain * 0.2, rotYmain * 0.2);
-                const proj = project(r.x, r.y, r.z, scale * 0.5);
-                if (proj.z > -3) {
-                    const size = n.size * (0.8 + 0.2 * Math.sin(time + n.x));
-                    const alpha = n.opacity * (1 - Math.abs(proj.z) / 15);
-                    const grad2 = ctx.createRadialGradient(
-                        proj.sx, proj.sy, 0,
-                        proj.sx, proj.sy, size * 30 * scale
-                    );
-                    grad2.addColorStop(0, n.color.replace('66', Math.floor(alpha * 80).toString(16).padStart(2, '0')));
-                    grad2.addColorStop(1, 'rgba(0,0,0,0)');
-                    ctx.fillStyle = grad2;
-                    ctx.fillRect(proj.sx - size * 40 * scale, proj.sy - size * 40 * scale, size * 80 * scale, size * 80 * scale);
+            // ---- ДАЛЬНИЙ ФОН (звёзды) ----
+            for (const s of bgStars) {
+                const r = rotate3D(s.x, s.y, s.z, rotXmain * 0.1, rotYmain * 0.1);
+                const p = project(r.x, r.y, r.z, scale * 0.6);
+                if (p.z > -5) {
+                    const alpha = s.opacity * (1 - Math.abs(p.z) / 35);
+                    ctx.beginPath();
+                    ctx.arc(p.sx, p.sy, s.size * (0.5 + 0.5 * (1 + p.z / 30)), 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255,255,255,${alpha * 0.4})`;
+                    ctx.fill();
                 }
             }
 
-            // Галактика
+            // ---- ТУМАННОСТИ ----
+            for (const n of nebulae) {
+                const r = rotate3D(n.x, n.y, n.z, rotXmain * 0.15, rotYmain * 0.15);
+                const p = project(r.x, r.y, r.z, scale * 0.4);
+                if (p.z > -4) {
+                    const sz = n.size * (0.8 + 0.2 * Math.sin(time * n.pulseSpeed + n.pulse));
+                    const alpha = n.opacity * (1 - Math.abs(p.z) / 18);
+                    const g = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, sz * 35 * scale);
+                    const aHex = Math.floor(alpha * 80).toString(16).padStart(2, '0');
+                    g.addColorStop(0, n.color.replace('66', aHex));
+                    g.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = g;
+                    ctx.fillRect(p.sx - sz * 45 * scale, p.sy - sz * 45 * scale, sz * 90 * scale, sz * 90 * scale);
+                }
+            }
+
+            // ---- МЕРЦАЮЩИЕ ЗВЁЗДЫ ----
+            for (const s of twinklingStars) {
+                const r = rotate3D(s.x, s.y, s.z, rotXmain * 0.3, rotYmain * 0.3);
+                const p = project(r.x, r.y, r.z, scale * 0.7);
+                if (p.z > -6) {
+                    const flicker = 0.6 + 0.4 * Math.sin(time * s.speed + s.phase);
+                    const alpha = 0.4 * flicker * (1 - Math.abs(p.z) / 18);
+                    const sz = s.size * (0.6 + 0.4 * flicker);
+                    // Свечение
+                    const g = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, sz * 4);
+                    g.addColorStop(0, `rgba(255,255,255,${alpha * 0.15})`);
+                    g.addColorStop(1, 'rgba(255,255,255,0)');
+                    ctx.fillStyle = g;
+                    ctx.fillRect(p.sx - sz * 4, p.sy - sz * 4, sz * 8, sz * 8);
+                    ctx.beginPath();
+                    ctx.arc(p.sx, p.sy, sz, 0, Math.PI * 2);
+                    ctx.fillStyle = s.color;
+                    ctx.globalAlpha = Math.min(1, alpha);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            }
+
+            // ---- ГАЛАКТИКА ----
             const projectedStars = galaxy.map(s => {
                 const r = rotate3D(s.x, s.y, s.z, rotXmain, rotYmain);
-                const proj = project(r.x, r.y, r.z, scale);
-                return { ...proj, size: s.size, color: s.color, opacity: s.opacity };
+                const p = project(r.x, r.y, r.z, scale);
+                return { ...p, size: s.size, color: s.color, opacity: s.opacity };
             });
-
             projectedStars.sort((a, b) => a.z - b.z);
 
             for (const s of projectedStars) {
-                if (s.z < -4) continue;
-                const alpha = s.opacity * (1 - Math.abs(s.z) / 12) * 0.9;
-                const size = s.size * (0.5 + 0.5 * (1 + s.z / 10));
-                
-                if (size > 1.5) {
-                    const glowSize = size * 3;
-                    const grad2 = ctx.createRadialGradient(s.sx, s.sy, 0, s.sx, s.sy, glowSize);
-                    grad2.addColorStop(0, `rgba(255,255,255,${alpha * 0.1})`);
-                    grad2.addColorStop(1, 'rgba(255,255,255,0)');
-                    ctx.fillStyle = grad2;
-                    ctx.fillRect(s.sx - glowSize, s.sy - glowSize, glowSize * 2, glowSize * 2);
+                if (s.z < -5) continue;
+                const alpha = s.opacity * (1 - Math.abs(s.z) / 13) * 0.9;
+                const size = s.size * (0.4 + 0.6 * (1 + s.z / 10));
+                if (size > 0.3) {
+                    if (size > 1.2) {
+                        const g = ctx.createRadialGradient(s.sx, s.sy, 0, s.sx, s.sy, size * 3);
+                        g.addColorStop(0, `rgba(255,255,255,${alpha * 0.08})`);
+                        g.addColorStop(1, 'rgba(255,255,255,0)');
+                        ctx.fillStyle = g;
+                        ctx.fillRect(s.sx - size * 3, s.sy - size * 3, size * 6, size * 6);
+                    }
+                    ctx.beginPath();
+                    ctx.arc(s.sx, s.sy, Math.max(0.3, size), 0, Math.PI * 2);
+                    ctx.fillStyle = s.color;
+                    ctx.globalAlpha = Math.min(1, alpha);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
                 }
-                
-                ctx.beginPath();
-                ctx.arc(s.sx, s.sy, Math.max(0.3, size), 0, Math.PI * 2);
-                ctx.fillStyle = s.color;
-                ctx.globalAlpha = Math.min(1, alpha);
-                ctx.fill();
-                ctx.globalAlpha = 1;
             }
 
-            // Планеты
-            for (const p of planets) {
-                if (!isPaused) {
-                    p.angle += p.orbitSpeed * 0.02;
+            // ---- АСТЕРОИДНЫЙ ПОЯС ----
+            for (const a of asteroidBelt) {
+                if (!isPaused) a.angle += a.speed * 0.008 * speedMultiplier;
+                const x = Math.cos(a.angle) * a.x;
+                const z = Math.sin(a.angle) * a.z;
+                const r = rotate3D(x, a.y, z, rotXmain, rotYmain);
+                const p = project(r.x, r.y, r.z, scale * 0.8);
+                if (p.z > -4 && p.z < 8) {
+                    const sz = a.size * (0.5 + 0.5 * (1 + p.z / 8));
+                    const alpha = 0.6 * (1 - Math.abs(p.z) / 10);
+                    ctx.save();
+                    ctx.translate(p.sx, p.sy);
+                    ctx.rotate(a.angle + time * 0.1);
+                    ctx.beginPath();
+                    for (let i = 0; i < a.points; i++) {
+                        const ang = (i / a.points) * Math.PI * 2;
+                        const r2 = sz * (0.7 + 0.3 * Math.sin(i * 3.1 + 1.7));
+                        if (i === 0) ctx.moveTo(Math.cos(ang) * r2, Math.sin(ang) * r2);
+                        else ctx.lineTo(Math.cos(ang) * r2, Math.sin(ang) * r2);
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = a.color;
+                    ctx.globalAlpha = Math.min(1, alpha);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                    ctx.restore();
                 }
-                
+            }
+
+            // ---- ПЛАНЕТЫ ----
+            for (const p of planets) {
+                if (!isPaused) p.angle += p.orbitSpeed * 0.02 * speedMultiplier;
                 const x = Math.cos(p.angle) * p.dist;
                 const z = Math.sin(p.angle) * p.dist;
-                const y = p.yOffset + Math.sin(p.angle * 0.5) * 0.3;
-                
+                const y = p.yOff + Math.sin(p.angle * 0.7 + p.tilt) * 0.3;
                 const r = rotate3D(x, y, z, rotXmain, rotYmain);
-                const proj = project(r.x, r.y, r.z, scale);
-                
-                if (proj.z < -3) continue;
-                
-                const size = p.size * 12 * (0.8 + 0.2 * (1 + proj.z / 8));
-                const alpha = 0.7 + 0.3 * (1 - (proj.z + 4) / 10);
-                
-                const glowSize = size * 3;
-                const grad2 = ctx.createRadialGradient(proj.sx, proj.sy, 0, proj.sx, proj.sy, glowSize);
-                grad2.addColorStop(0, `rgba(255,255,255,${0.05 * alpha})`);
-                grad2.addColorStop(1, 'rgba(255,255,255,0)');
-                ctx.fillStyle = grad2;
-                ctx.fillRect(proj.sx - glowSize, proj.sy - glowSize, glowSize * 2, glowSize * 2);
-                
-                const grad3 = ctx.createRadialGradient(
-                    proj.sx - size * 0.3, proj.sy - size * 0.3, 0,
-                    proj.sx, proj.sy, size
+                const pr = project(r.x, r.y, r.z, scale);
+
+                if (pr.z < -3 || pr.z > 10) continue;
+
+                const size = p.size * 14 * (0.7 + 0.3 * (1 + pr.z / 9));
+                const alpha = 0.6 + 0.4 * (1 - (pr.z + 4) / 12);
+
+                // Ореол
+                const g = ctx.createRadialGradient(pr.sx, pr.sy, 0, pr.sx, pr.sy, size * 4);
+                g.addColorStop(0, `rgba(255,255,255,${0.04 * alpha})`);
+                g.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.fillStyle = g;
+                ctx.fillRect(pr.sx - size * 4, pr.sy - size * 4, size * 8, size * 8);
+
+                // Планета
+                const g2 = ctx.createRadialGradient(
+                    pr.sx - size * 0.3, pr.sy - size * 0.3, 0,
+                    pr.sx, pr.sy, size
                 );
-                grad3.addColorStop(0, '#ffffff');
-                grad3.addColorStop(0.2, p.color);
-                grad3.addColorStop(1, p.color);
+                g2.addColorStop(0, '#ffffff');
+                g2.addColorStop(0.15, p.color);
+                g2.addColorStop(1, p.color);
                 ctx.beginPath();
-                ctx.arc(proj.sx, proj.sy, size, 0, Math.PI * 2);
-                ctx.fillStyle = grad3;
+                ctx.arc(pr.sx, pr.sy, size, 0, Math.PI * 2);
+                ctx.fillStyle = g2;
                 ctx.globalAlpha = Math.min(1, alpha);
                 ctx.fill();
                 ctx.globalAlpha = 1;
-                
-                if (p.hasRing) {
+
+                // Кольца Сатурна
+                if (p.ring) {
                     ctx.save();
-                    ctx.globalAlpha = 0.4 * alpha;
-                    ctx.translate(proj.sx, proj.sy);
-                    ctx.scale(1, 0.25);
+                    ctx.globalAlpha = 0.35 * alpha;
+                    ctx.translate(pr.sx, pr.sy);
+                    ctx.scale(1, 0.2);
                     ctx.beginPath();
-                    ctx.ellipse(0, 0, size * 1.9, size * 0.6, 0, 0, Math.PI * 2);
-                    ctx.strokeStyle = 'rgba(200,180,150,0.5)';
-                    ctx.lineWidth = 3;
+                    ctx.ellipse(0, 0, size * 2.1, size * 0.6, 0, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(200,180,150,0.4)';
+                    ctx.lineWidth = 2.5;
                     ctx.stroke();
-                    
                     ctx.beginPath();
-                    ctx.ellipse(0, 0, size * 2.3, size * 0.7, 0, 0, Math.PI * 2);
-                    ctx.strokeStyle = 'rgba(180,160,130,0.3)';
-                    ctx.lineWidth = 2;
+                    ctx.ellipse(0, 0, size * 2.6, size * 0.7, 0, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(180,160,130,0.25)';
+                    ctx.lineWidth = 1.5;
                     ctx.stroke();
                     ctx.restore();
                     ctx.globalAlpha = 1;
                 }
-                
-                if (zoom > 1.2) {
-                    ctx.fillStyle = `rgba(255,255,255,${0.3 * alpha})`;
-                    ctx.font = `${Math.max(8, 10 * zoom * 0.6)}px Arial`;
+
+                // Название при приближении
+                if (zoom > 1.3) {
+                    ctx.fillStyle = `rgba(255,255,255,${0.25 * alpha})`;
+                    ctx.font = `${Math.max(7, 9 * zoom * 0.6)}px Arial`;
                     ctx.textAlign = 'center';
-                    ctx.fillText(p.name, proj.sx, proj.sy + size + 14);
+                    ctx.fillText(p.name, pr.sx, pr.sy + size + 16);
                 }
             }
 
-            // Ядро галактики
-            const coreSize = 50 * scale;
-            const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreSize);
-            coreGrad.addColorStop(0, `rgba(255,220,150,${0.04 + 0.02 * Math.sin(time * 0.5)})`);
-            coreGrad.addColorStop(0.3, `rgba(255,180,100,${0.02})`);
-            coreGrad.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = coreGrad;
+            // ---- ЯДРО ГАЛАКТИКИ (свечение) ----
+            const coreSize = 55 * scale;
+            const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreSize);
+            cg.addColorStop(0, `rgba(255,230,180,${0.05 + 0.025 * Math.sin(time * 0.4)})`);
+            cg.addColorStop(0.4, `rgba(255,200,140,${0.025})`);
+            cg.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = cg;
             ctx.fillRect(cx - coreSize, cy - coreSize, coreSize * 2, coreSize * 2);
 
-            ctx.fillStyle = 'rgba(255,255,255,0.1)';
-            ctx.font = '11px Arial';
+            // ---- СВЕТОВЫЕ ЛУЧИ ----
+            for (let i = 0; i < 16; i++) {
+                const ang = (i / 16) * Math.PI * 2 + time * 0.015;
+                const len = 40 + 25 * Math.sin(time * 0.4 + i * 0.8);
+                const x1 = cx + Math.cos(ang) * 25;
+                const y1 = cy + Math.sin(ang) * 25;
+                const x2 = cx + Math.cos(ang) * (25 + len);
+                const y2 = cy + Math.sin(ang) * (25 + len);
+                const a = 0.015 + 0.01 * Math.sin(time * 0.25 + i * 0.5);
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = `rgba(180,220,255,${a})`;
+                ctx.lineWidth = 0.8 + 0.5 * Math.sin(time * 0.3 + i * 0.7);
+                ctx.stroke();
+            }
+
+            // ---- ИНФОРМАЦИЯ (низ) ----
+            ctx.fillStyle = 'rgba(255,255,255,0.06)';
+            ctx.font = '10px Arial';
             ctx.textAlign = 'right';
-            ctx.fillText(`⭐ ${galaxy.length} звёзд`, W - 15, H - 70);
-            ctx.fillText(`🪐 ${planets.length} планет`, W - 15, H - 52);
-            ctx.fillText(`🔭 ${(zoom * 100).toFixed(0)}%`, W - 15, H - 34);
+            const total = galaxy.length + planets.length + asteroidBelt.length + nebulae.length + bgStars.length + twinklingStars.length;
+            ctx.fillText(`✦ ${total.toLocaleString()} объектов`, W - 14, H - 14);
 
             requestAnimationFrame(draw);
         }
@@ -595,10 +787,11 @@
 
         window.addEventListener('resize', resize);
 
-        console.log('🌌 Млечный Путь 3D запущен!');
-        console.log('🖱️ Тащите для вращения');
-        console.log('🔍 Пинч/колёсико для зума');
-        console.log('⏸️ Кнопка паузы');
+        console.log('🌌 Космическая одиссея запущена!');
+        console.log(`⭐ ${galaxy.length} звёзд в галактике`);
+        console.log(`🪐 ${planets.length} планет`);
+        console.log(`🌀 ${asteroidBelt.length} астероидов`);
+        console.log(`🌌 ${nebulae.length} туманностей`);
     </script>
 </body>
 </html>
