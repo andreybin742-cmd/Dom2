@@ -24,8 +24,6 @@
             width: 100%;
             height: 100%;
         }
-
-        /* Интерфейс */
         .ui {
             position: fixed;
             top: 0;
@@ -50,10 +48,6 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 215, 0, 0.2);
             pointer-events: none;
-        }
-        .score span {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.5);
         }
         .combo {
             position: absolute;
@@ -122,18 +116,18 @@
             text-align: center;
         }
         .start-screen h1 {
-            font-size: 42px;
+            font-size: 38px;
             color: #ffd700;
             margin-bottom: 8px;
             text-shadow: 0 0 60px rgba(255, 215, 0, 0.2);
         }
         .start-screen .sub {
-            font-size: 16px;
+            font-size: 15px;
             color: rgba(255, 255, 255, 0.4);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .start-screen .emoji-big {
-            font-size: 80px;
+            font-size: 70px;
             display: block;
             margin-bottom: 10px;
         }
@@ -141,11 +135,12 @@
             color: rgba(255, 255, 255, 0.3);
             font-size: 13px;
             line-height: 1.8;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             background: rgba(255, 255, 255, 0.03);
             padding: 16px 24px;
             border-radius: 16px;
             border: 1px solid rgba(255, 255, 255, 0.05);
+            max-width: 400px;
         }
         .start-screen .controls-info strong {
             color: rgba(255, 255, 255, 0.6);
@@ -180,7 +175,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 10, 26, 0.9);
+            background: rgba(10, 10, 26, 0.92);
             display: none;
             flex-direction: column;
             align-items: center;
@@ -194,12 +189,12 @@
             display: flex;
         }
         .game-over h1 {
-            font-size: 48px;
+            font-size: 42px;
             color: #ff6b6b;
             margin-bottom: 4px;
         }
         .game-over .final-score {
-            font-size: 64px;
+            font-size: 56px;
             color: #ffd700;
             font-weight: 700;
             margin: 10px 0;
@@ -226,35 +221,28 @@
         .game-over .restart-btn:active {
             transform: scale(0.95);
         }
-
         @media (max-width: 500px) {
-            .start-screen h1 { font-size: 28px; }
+            .start-screen h1 { font-size: 26px; }
             .score { font-size: 18px; padding: 6px 16px; top: 12px; }
             .lives { font-size: 18px; top: 12px; right: 12px; padding: 4px 12px; }
             .combo { font-size: 15px; top: 60px; }
-            .start-screen .emoji-big { font-size: 50px; }
+            .start-screen .emoji-big { font-size: 45px; }
             .start-screen .controls-info { font-size: 11px; padding: 12px 16px; }
             .start-btn { padding: 14px 32px; font-size: 17px; }
-            .game-over h1 { font-size: 32px; }
-            .game-over .final-score { font-size: 44px; }
+            .game-over h1 { font-size: 30px; }
+            .game-over .final-score { font-size: 40px; }
             .camera-status { font-size: 10px; padding: 4px 12px; bottom: 12px; }
         }
     </style>
 </head>
 <body>
-
-    <!-- Канвас -->
     <canvas id="gameCanvas"></canvas>
-
-    <!-- Интерфейс -->
     <div class="ui" id="ui">
         <div class="score">⭐ <span id="scoreDisplay">0</span></div>
         <div class="combo" id="comboDisplay">🔥 Комбо x<span id="comboCount">0</span></div>
         <div class="lives" id="livesDisplay">❤️❤️❤️</div>
-        <div class="camera-status" id="cameraStatus">📷 Камера: инициализация...</div>
+        <div class="camera-status" id="cameraStatus">📷 Камера: ожидание...</div>
     </div>
-
-    <!-- Стартовый экран -->
     <div class="start-screen" id="startScreen">
         <span class="emoji-big">🚀</span>
         <h1>Космический сборщик</h1>
@@ -262,7 +250,7 @@
         <div class="controls-info">
             <strong>✋ Как играть:</strong><br>
             🖐️ Двигай рукой перед камерой — корабль летит за ней<br>
-            🌟 Собирай звёзды и планеты для очков<br>
+            🌟 Собирай звёзды и планеты<br>
             💥 Избегай астероидов<br>
             🔥 Комбо за быстрый сбор!
         </div>
@@ -271,8 +259,6 @@
             <span class="small">🎥 Требуется доступ к камере</span>
         </button>
     </div>
-
-    <!-- Экран Game Over -->
     <div class="game-over" id="gameOver">
         <h1>💥 Игра окончена</h1>
         <div class="final-label">Твой счёт</div>
@@ -325,13 +311,11 @@
         let shipX = cx;
         let shipY = cy;
 
-        // Объекты
         let stars = [];
         let asteroids = [];
         let particles = [];
         let collectibles = [];
 
-        // Управление
         let mouseX = cx;
         let mouseY = cy;
         let targetX = cx;
@@ -339,22 +323,21 @@
         let isUsingCamera = false;
         let cameraActive = false;
 
-        // Камера
         let video = null;
         let motionData = { x: 0.5, y: 0.5, active: false };
         let motionSmoothX = 0.5;
         let motionSmoothY = 0.5;
 
-        // Таймеры
         let spawnTimer = 0;
         let asteroidTimer = 0;
         let frameCount = 0;
 
         // ================================================================
-        //  КАМЕРА
+        //  КАМЕРА (запускается ПОСЛЕ нажатия кнопки)
         // ================================================================
         async function initCamera() {
             try {
+                cameraStatus.textContent = '📷 Запрос доступа...';
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: 'user',
@@ -366,15 +349,16 @@
                 video.srcObject = stream;
                 await video.play();
                 cameraActive = true;
+                isUsingCamera = true;
                 cameraStatus.textContent = '📷 Камера: ✅ активна! Двигай рукой';
                 cameraStatus.classList.add('active');
-                startBtn.textContent = '▶ Начать игру';
                 startBtn.querySelector('.small').textContent = '🎥 Камера готова!';
                 return true;
             } catch (err) {
                 console.warn('Камера не доступна:', err);
+                cameraActive = false;
+                isUsingCamera = false;
                 cameraStatus.textContent = '📷 Камера: ❌ недоступна, используй мышь/палец';
-                startBtn.textContent = '▶ Начать игру (без камеры)';
                 startBtn.querySelector('.small').textContent = '🖱️ Управление мышью/пальцем';
                 return false;
             }
@@ -382,51 +366,49 @@
 
         function detectMotion() {
             if (!video || !cameraActive) return;
-            const canvas2 = document.createElement('canvas');
-            const ctx2 = canvas2.getContext('2d');
-            canvas2.width = 80;
-            canvas2.height = 60;
-            ctx2.drawImage(video, 0, 0, canvas2.width, canvas2.height);
-            const imageData = ctx2.getImageData(0, 0, canvas2.width, canvas2.height);
-            const data = imageData.data;
+            try {
+                const canvas2 = document.createElement('canvas');
+                const ctx2 = canvas2.getContext('2d');
+                canvas2.width = 80;
+                canvas2.height = 60;
+                ctx2.drawImage(video, 0, 0, canvas2.width, canvas2.height);
+                const imageData = ctx2.getImageData(0, 0, canvas2.width, canvas2.height);
+                const data = imageData.data;
 
-            // Простой детектор движения: анализируем яркость
-            let sum = 0;
-            for (let i = 0; i < data.length; i += 4) {
-                sum += (data[i] + data[i + 1] + data[i + 2]) / 3;
-            }
-            const avg = sum / (canvas2.width * canvas2.height);
+                let sum = 0;
+                for (let i = 0; i < data.length; i += 4) {
+                    sum += (data[i] + data[i + 1] + data[i + 2]) / 3;
+                }
+                const avg = sum / (canvas2.width * canvas2.height);
 
-            // Определяем движение по изменению яркости
-            if (window._lastAvg !== undefined) {
-                const diff = Math.abs(avg - window._lastAvg);
-                motionData.active = diff > 8;
-                if (motionData.active) {
-                    // Определяем направление движения
-                    // (упрощённо: по центру масс ярких пикселей)
-                    let cx2 = 0,
-                        cy2 = 0,
-                        count = 0;
-                    for (let y = 0; y < canvas2.height; y++) {
-                        for (let x = 0; x < canvas2.width; x++) {
-                            const idx = (y * canvas2.width + x) * 4;
-                            const bright = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
-                            if (bright > 80) {
-                                cx2 += x;
-                                cy2 += y;
-                                count++;
+                if (window._lastAvg !== undefined) {
+                    const diff = Math.abs(avg - window._lastAvg);
+                    motionData.active = diff > 8;
+                    if (motionData.active) {
+                        let cx2 = 0,
+                            cy2 = 0,
+                            count = 0;
+                        for (let y = 0; y < canvas2.height; y++) {
+                            for (let x = 0; x < canvas2.width; x++) {
+                                const idx = (y * canvas2.width + x) * 4;
+                                const bright = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+                                if (bright > 80) {
+                                    cx2 += x;
+                                    cy2 += y;
+                                    count++;
+                                }
                             }
                         }
-                    }
-                    if (count > 50) {
-                        cx2 /= count;
-                        cy2 /= count;
-                        motionData.x = cx2 / canvas2.width;
-                        motionData.y = cy2 / canvas2.height;
+                        if (count > 50) {
+                            cx2 /= count;
+                            cy2 /= count;
+                            motionData.x = cx2 / canvas2.width;
+                            motionData.y = cy2 / canvas2.height;
+                        }
                     }
                 }
-            }
-            window._lastAvg = avg;
+                window._lastAvg = avg;
+            } catch (e) {}
         }
 
         // ================================================================
@@ -501,22 +483,17 @@
         //  УПРАВЛЕНИЕ
         // ================================================================
         function updateShipPosition() {
-            // Сглаживание позиции
             if (isUsingCamera && cameraActive) {
-                // Используем данные с камеры
                 motionSmoothX += (motionData.x - motionSmoothX) * 0.15;
                 motionSmoothY += (motionData.y - motionSmoothY) * 0.15;
                 targetX = motionSmoothX * W;
                 targetY = motionSmoothY * H;
-                // Ограничиваем краями
                 targetX = Math.max(30, Math.min(W - 30, targetX));
                 targetY = Math.max(30, Math.min(H - 30, targetY));
             } else {
-                // Используем мышь/палец
                 targetX = Math.max(30, Math.min(W - 30, mouseX));
                 targetY = Math.max(30, Math.min(H - 30, mouseY));
             }
-
             shipX += (targetX - shipX) * 0.12;
             shipY += (targetY - shipY) * 0.12;
         }
@@ -528,10 +505,8 @@
             if (!gameRunning) return;
             frameCount++;
 
-            // Обновляем позицию корабля
             updateShipPosition();
 
-            // Комбо таймер
             if (comboTimer > 0) {
                 comboTimer--;
                 if (comboTimer === 0) {
@@ -540,7 +515,6 @@
                 }
             }
 
-            // Спавн звёзд
             spawnTimer++;
             const spawnRate = Math.max(15, 40 - Math.floor(score / 100));
             if (spawnTimer > spawnRate) {
@@ -552,7 +526,6 @@
                 }
             }
 
-            // Спавн астероидов (увеличивается со временем)
             asteroidTimer++;
             const astRate = Math.max(40, 80 - Math.floor(score / 50));
             if (asteroidTimer > astRate && stars.length < 30) {
@@ -562,14 +535,12 @@
                 }
             }
 
-            // Обновляем звёзды
             for (let i = stars.length - 1; i >= 0; i--) {
                 const s = stars[i];
                 s.y += s.speed;
                 s.rotation += s.rotSpeed;
                 s.glow = 0.5 + 0.5 * Math.sin(frameCount * 0.05 + i);
 
-                // Проверка сбора
                 const dx = s.x - shipX;
                 const dy = s.y - shipY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
@@ -583,14 +554,9 @@
                     updateUI();
                     continue;
                 }
-
-                // За пределами экрана
-                if (s.y > H + 50) {
-                    stars.splice(i, 1);
-                }
+                if (s.y > H + 50) stars.splice(i, 1);
             }
 
-            // Обновляем коллекционные предметы
             for (let i = collectibles.length - 1; i >= 0; i--) {
                 const c = collectibles[i];
                 c.y += c.speed;
@@ -609,13 +575,9 @@
                     updateUI();
                     continue;
                 }
-
-                if (c.y > H + 50) {
-                    collectibles.splice(i, 1);
-                }
+                if (c.y > H + 50) collectibles.splice(i, 1);
             }
 
-            // Обновляем астероиды
             for (let i = asteroids.length - 1; i >= 0; i--) {
                 const a = asteroids[i];
                 a.y += a.speed;
@@ -625,7 +587,6 @@
                 const dy = a.y - shipY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist < 30 + a.size / 2) {
-                    // Столкновение!
                     createParticles(a.x, a.y, '#ff4444', 30);
                     lives--;
                     combo = 0;
@@ -633,32 +594,24 @@
                     comboDisplay.classList.remove('active');
                     updateUI();
                     asteroids.splice(i, 1);
-
                     if (lives <= 0) {
                         gameOverScreen();
                         return;
                     }
                     continue;
                 }
-
-                if (a.y > H + 50) {
-                    asteroids.splice(i, 1);
-                }
+                if (a.y > H + 50) asteroids.splice(i, 1);
             }
 
-            // Обновляем частицы
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
                 p.x += p.vx;
                 p.y += p.vy;
                 p.vy += p.gravity;
                 p.life -= p.decay;
-                if (p.life <= 0) {
-                    particles.splice(i, 1);
-                }
+                if (p.life <= 0) particles.splice(i, 1);
             }
 
-            // Ограничиваем количество объектов
             if (stars.length > 100) stars.splice(0, stars.length - 100);
             if (asteroids.length > 50) asteroids.splice(0, asteroids.length - 50);
             if (particles.length > 200) particles.splice(0, particles.length - 200);
@@ -668,7 +621,6 @@
         //  ОТРИСОВКА
         // ================================================================
         function drawGame() {
-            // Фон с градиентом и звёздами
             const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.8);
             grad.addColorStop(0, '#1a1a3e');
             grad.addColorStop(0.5, '#0f0f2a');
@@ -676,7 +628,6 @@
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, W, H);
 
-            // Фоновые звёзды (мелкие точки)
             ctx.fillStyle = 'rgba(255,255,255,0.3)';
             for (let i = 0; i < 60; i++) {
                 const x = (i * 137 + i * i * 3) % W;
@@ -687,7 +638,6 @@
                 ctx.fill();
             }
 
-            // Частицы
             for (const p of particles) {
                 ctx.globalAlpha = p.life;
                 ctx.beginPath();
@@ -697,7 +647,6 @@
             }
             ctx.globalAlpha = 1;
 
-            // Астероиды
             for (const a of asteroids) {
                 ctx.save();
                 ctx.translate(a.x, a.y);
@@ -719,13 +668,11 @@
                 ctx.restore();
             }
 
-            // Звёзды и коллекционные предметы
             for (const s of stars) {
                 ctx.save();
                 ctx.translate(s.x, s.y);
                 ctx.rotate(s.rotation);
                 const glow = s.glow;
-                // Свечение
                 const grad2 = ctx.createRadialGradient(0, 0, 0, 0, 0, s.size * 1.5);
                 grad2.addColorStop(0, `rgba(255,255,255,${0.1 * glow})`);
                 grad2.addColorStop(1, 'rgba(255,255,255,0)');
@@ -733,7 +680,6 @@
                 ctx.beginPath();
                 ctx.arc(0, 0, s.size * 1.5, 0, Math.PI * 2);
                 ctx.fill();
-
                 ctx.font = `${s.size}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -745,7 +691,6 @@
                 ctx.save();
                 ctx.translate(c.x, c.y);
                 ctx.rotate(c.rotation);
-                // Свечение
                 const grad2 = ctx.createRadialGradient(0, 0, 0, 0, 0, 40);
                 grad2.addColorStop(0, 'rgba(255,215,0,0.15)');
                 grad2.addColorStop(1, 'rgba(255,215,0,0)');
@@ -753,7 +698,6 @@
                 ctx.beginPath();
                 ctx.arc(0, 0, 40, 0, Math.PI * 2);
                 ctx.fill();
-
                 ctx.font = `${c.size}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -761,10 +705,8 @@
                 ctx.restore();
             }
 
-            // Корабль (игрок)
             ctx.save();
             ctx.translate(shipX, shipY);
-            // Свечение корабля
             const glowShip = ctx.createRadialGradient(0, 0, 0, 0, 0, 60);
             glowShip.addColorStop(0, 'rgba(0, 200, 255, 0.15)');
             glowShip.addColorStop(1, 'rgba(0, 200, 255, 0)');
@@ -773,7 +715,6 @@
             ctx.arc(0, 0, 60, 0, Math.PI * 2);
             ctx.fill();
 
-            // Треугольник (корабль)
             const angle = Math.atan2(targetY - shipY, targetX - shipX);
             ctx.rotate(angle + Math.PI / 2);
 
@@ -792,16 +733,13 @@
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            // Огонь из двигателя
             ctx.beginPath();
             ctx.moveTo(-10, 20);
             ctx.quadraticCurveTo(0, 20 + 8 + Math.random() * 6, 10, 20);
             ctx.fillStyle = `rgba(255, 150, 50, ${0.5 + Math.random() * 0.3})`;
             ctx.fill();
-
             ctx.restore();
 
-            // Индикатор комбо
             if (combo > 0 && comboTimer > 0) {
                 comboDisplay.classList.add('active');
                 comboCount.textContent = combo;
@@ -809,7 +747,7 @@
         }
 
         // ================================================================
-        //  ОБНОВЛЕНИЕ UI
+        //  UI
         // ================================================================
         function updateUI() {
             scoreDisplay.textContent = score;
@@ -817,16 +755,12 @@
             for (let i = 0; i < lives; i++) hearts += '❤️';
             if (lives === 0) hearts = '💔💔💔';
             livesDisplay.textContent = hearts || '💔';
-
             if (combo > 0 && comboTimer > 0) {
                 comboDisplay.classList.add('active');
                 comboCount.textContent = combo;
             }
         }
 
-        // ================================================================
-        //  GAME OVER
-        // ================================================================
         function gameOverScreen() {
             gameRunning = false;
             gameOver.classList.add('show');
@@ -842,7 +776,6 @@
             if (cameraActive && video) {
                 detectMotion();
             }
-
             updateGame();
             drawGame();
             requestAnimationFrame(gameLoop);
@@ -852,7 +785,6 @@
         //  ЗАПУСК ИГРЫ
         // ================================================================
         function startGame() {
-            // Сброс
             score = 0;
             lives = 3;
             combo = 0;
@@ -868,7 +800,6 @@
             shipY = cy;
             targetX = cx;
             targetY = cy;
-
             gameRunning = true;
             startScreen.style.display = 'none';
             gameOver.classList.remove('show');
@@ -879,34 +810,33 @@
         // ================================================================
         //  СОБЫТИЯ
         // ================================================================
-        // Мышь
         canvas.addEventListener('mousemove', (e) => {
             mouseX = e.clientX;
             mouseY = e.clientY;
-            isUsingCamera = false;
+            if (!cameraActive) isUsingCamera = false;
         });
 
-        // Тач
         canvas.addEventListener('touchmove', (e) => {
             e.preventDefault();
             const touch = e.touches[0];
             mouseX = touch.clientX;
             mouseY = touch.clientY;
-            isUsingCamera = false;
+            if (!cameraActive) isUsingCamera = false;
         }, { passive: false });
 
         canvas.addEventListener('touchstart', (e) => {
             const touch = e.touches[0];
             mouseX = touch.clientX;
             mouseY = touch.clientY;
-            isUsingCamera = false;
+            if (!cameraActive) isUsingCamera = false;
         });
 
-        // Кнопки
         startBtn.addEventListener('click', async () => {
-            if (!cameraActive) {
-                await initCamera();
-            }
+            startBtn.textContent = '⏳ Загрузка...';
+            startBtn.disabled = true;
+            await initCamera();
+            startBtn.textContent = '▶ Начать игру';
+            startBtn.disabled = false;
             startGame();
         });
 
@@ -915,29 +845,10 @@
         });
 
         // ================================================================
-        //  ИНИЦИАЛИЗАЦИЯ
+        //  ЗАПУСК
         // ================================================================
-        async function init() {
-            await initCamera();
-            // Запускаем цикл
-            gameLoop();
-
-            // Если камера не активна, используем мышь по умолчанию
-            if (!cameraActive) {
-                isUsingCamera = false;
-                cameraStatus.textContent = '📷 Камера: ❌ используй мышь/палец';
-            } else {
-                isUsingCamera = true;
-                // Запускаем детекцию движения
-                setInterval(() => {
-                    if (cameraActive && video) detectMotion();
-                }, 50);
-            }
-
-            console.log('🚀 Космический сборщик загружен!');
-        }
-
-        init();
+        gameLoop();
+        console.log('🚀 Космический сборщик загружен!');
     </script>
 </body>
 </html>
