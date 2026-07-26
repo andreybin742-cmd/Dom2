@@ -80,25 +80,6 @@
             border: 1px solid rgba(255, 107, 107, 0.2);
             pointer-events: none;
         }
-        .camera-status {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 12px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 6px 16px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            pointer-events: none;
-            white-space: nowrap;
-        }
-        .camera-status.active {
-            color: #00ff88;
-            border-color: rgba(0, 255, 136, 0.2);
-        }
         .start-screen {
             position: fixed;
             top: 0;
@@ -162,13 +143,6 @@
         .start-btn:active {
             transform: scale(0.95);
         }
-        .start-btn .small {
-            font-size: 13px;
-            font-weight: 400;
-            opacity: 0.6;
-            display: block;
-            margin-top: 2px;
-        }
         .game-over {
             position: fixed;
             top: 0;
@@ -221,6 +195,22 @@
         .game-over .restart-btn:active {
             transform: scale(0.95);
         }
+        .hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 6px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            pointer-events: none;
+            z-index: 10;
+            white-space: nowrap;
+        }
         @media (max-width: 500px) {
             .start-screen h1 { font-size: 26px; }
             .score { font-size: 18px; padding: 6px 16px; top: 12px; }
@@ -231,33 +221,30 @@
             .start-btn { padding: 14px 32px; font-size: 17px; }
             .game-over h1 { font-size: 30px; }
             .game-over .final-score { font-size: 40px; }
-            .camera-status { font-size: 10px; padding: 4px 12px; bottom: 12px; }
+            .hint { font-size: 10px; padding: 4px 12px; bottom: 12px; }
         }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
-    <div class="ui" id="ui">
+    <div class="ui">
         <div class="score">⭐ <span id="scoreDisplay">0</span></div>
         <div class="combo" id="comboDisplay">🔥 Комбо x<span id="comboCount">0</span></div>
         <div class="lives" id="livesDisplay">❤️❤️❤️</div>
-        <div class="camera-status" id="cameraStatus">📷 Камера: ожидание...</div>
     </div>
+    <div class="hint">👆 Тащи пальцем для управления</div>
     <div class="start-screen" id="startScreen">
         <span class="emoji-big">🚀</span>
         <h1>Космический сборщик</h1>
-        <div class="sub">Управляй кораблём движениями руки</div>
+        <div class="sub">Управляй кораблём пальцем</div>
         <div class="controls-info">
-            <strong>✋ Как играть:</strong><br>
-            🖐️ Двигай рукой перед камерой — корабль летит за ней<br>
+            <strong>👆 Как играть:</strong><br>
+            🖐️ Тащи пальцем — корабль летит за ним<br>
             🌟 Собирай звёзды и планеты<br>
             💥 Избегай астероидов<br>
             🔥 Комбо за быстрый сбор!
         </div>
-        <button class="start-btn" id="startBtn">
-            ▶ Начать игру
-            <span class="small">🎥 Требуется доступ к камере</span>
-        </button>
+        <button class="start-btn" id="startBtn">▶ Начать игру</button>
     </div>
     <div class="game-over" id="gameOver">
         <h1>💥 Игра окончена</h1>
@@ -291,7 +278,6 @@
         const comboDisplay = document.getElementById('comboDisplay');
         const comboCount = document.getElementById('comboCount');
         const livesDisplay = document.getElementById('livesDisplay');
-        const cameraStatus = document.getElementById('cameraStatus');
         const startScreen = document.getElementById('startScreen');
         const startBtn = document.getElementById('startBtn');
         const gameOver = document.getElementById('gameOver');
@@ -310,106 +296,53 @@
         let comboTimer = 0;
         let shipX = cx;
         let shipY = cy;
+        let targetX = cx;
+        let targetY = cy;
 
         let stars = [];
         let asteroids = [];
         let particles = [];
         let collectibles = [];
 
-        let mouseX = cx;
-        let mouseY = cy;
-        let targetX = cx;
-        let targetY = cy;
-        let isUsingCamera = false;
-        let cameraActive = false;
-
-        let video = null;
-        let motionData = { x: 0.5, y: 0.5, active: false };
-        let motionSmoothX = 0.5;
-        let motionSmoothY = 0.5;
-
         let spawnTimer = 0;
         let asteroidTimer = 0;
         let frameCount = 0;
 
         // ================================================================
-        //  КАМЕРА (запускается ПОСЛЕ нажатия кнопки)
+        //  УПРАВЛЕНИЕ (палец/мышь)
         // ================================================================
-        async function initCamera() {
-            try {
-                cameraStatus.textContent = '📷 Запрос доступа...';
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: 'user',
-                        width: { ideal: 320 },
-                        height: { ideal: 240 }
-                    }
-                });
-                video = document.createElement('video');
-                video.srcObject = stream;
-                await video.play();
-                cameraActive = true;
-                isUsingCamera = true;
-                cameraStatus.textContent = '📷 Камера: ✅ активна! Двигай рукой';
-                cameraStatus.classList.add('active');
-                startBtn.querySelector('.small').textContent = '🎥 Камера готова!';
-                return true;
-            } catch (err) {
-                console.warn('Камера не доступна:', err);
-                cameraActive = false;
-                isUsingCamera = false;
-                cameraStatus.textContent = '📷 Камера: ❌ недоступна, используй мышь/палец';
-                startBtn.querySelector('.small').textContent = '🖱️ Управление мышью/пальцем';
-                return false;
+        function onStart(x, y) {
+            targetX = x;
+            targetY = y;
+        }
+
+        function onMove(x, y) {
+            targetX = x;
+            targetY = y;
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            onStart(e.clientX, e.clientY);
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (gameRunning) {
+                onMove(e.clientX, e.clientY);
             }
-        }
+        });
 
-        function detectMotion() {
-            if (!video || !cameraActive) return;
-            try {
-                const canvas2 = document.createElement('canvas');
-                const ctx2 = canvas2.getContext('2d');
-                canvas2.width = 80;
-                canvas2.height = 60;
-                ctx2.drawImage(video, 0, 0, canvas2.width, canvas2.height);
-                const imageData = ctx2.getImageData(0, 0, canvas2.width, canvas2.height);
-                const data = imageData.data;
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            onStart(touch.clientX, touch.clientY);
+        }, { passive: false });
 
-                let sum = 0;
-                for (let i = 0; i < data.length; i += 4) {
-                    sum += (data[i] + data[i + 1] + data[i + 2]) / 3;
-                }
-                const avg = sum / (canvas2.width * canvas2.height);
-
-                if (window._lastAvg !== undefined) {
-                    const diff = Math.abs(avg - window._lastAvg);
-                    motionData.active = diff > 8;
-                    if (motionData.active) {
-                        let cx2 = 0,
-                            cy2 = 0,
-                            count = 0;
-                        for (let y = 0; y < canvas2.height; y++) {
-                            for (let x = 0; x < canvas2.width; x++) {
-                                const idx = (y * canvas2.width + x) * 4;
-                                const bright = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
-                                if (bright > 80) {
-                                    cx2 += x;
-                                    cy2 += y;
-                                    count++;
-                                }
-                            }
-                        }
-                        if (count > 50) {
-                            cx2 /= count;
-                            cy2 /= count;
-                            motionData.x = cx2 / canvas2.width;
-                            motionData.y = cy2 / canvas2.height;
-                        }
-                    }
-                }
-                window._lastAvg = avg;
-            } catch (e) {}
-        }
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (gameRunning) {
+                const touch = e.touches[0];
+                onMove(touch.clientX, touch.clientY);
+            }
+        }, { passive: false });
 
         // ================================================================
         //  ИГРОВЫЕ ОБЪЕКТЫ
@@ -480,32 +413,17 @@
         }
 
         // ================================================================
-        //  УПРАВЛЕНИЕ
-        // ================================================================
-        function updateShipPosition() {
-            if (isUsingCamera && cameraActive) {
-                motionSmoothX += (motionData.x - motionSmoothX) * 0.15;
-                motionSmoothY += (motionData.y - motionSmoothY) * 0.15;
-                targetX = motionSmoothX * W;
-                targetY = motionSmoothY * H;
-                targetX = Math.max(30, Math.min(W - 30, targetX));
-                targetY = Math.max(30, Math.min(H - 30, targetY));
-            } else {
-                targetX = Math.max(30, Math.min(W - 30, mouseX));
-                targetY = Math.max(30, Math.min(H - 30, mouseY));
-            }
-            shipX += (targetX - shipX) * 0.12;
-            shipY += (targetY - shipY) * 0.12;
-        }
-
-        // ================================================================
         //  ОБНОВЛЕНИЕ ИГРЫ
         // ================================================================
         function updateGame() {
             if (!gameRunning) return;
             frameCount++;
 
-            updateShipPosition();
+            // Плавное движение корабля
+            shipX += (targetX - shipX) * 0.12;
+            shipY += (targetY - shipY) * 0.12;
+            shipX = Math.max(30, Math.min(W - 30, shipX));
+            shipY = Math.max(30, Math.min(H - 30, shipY));
 
             if (comboTimer > 0) {
                 comboTimer--;
@@ -773,9 +691,6 @@
         //  ОСНОВНОЙ ЦИКЛ
         // ================================================================
         function gameLoop() {
-            if (cameraActive && video) {
-                detectMotion();
-            }
             updateGame();
             drawGame();
             requestAnimationFrame(gameLoop);
@@ -807,48 +722,15 @@
             comboDisplay.classList.remove('active');
         }
 
-        // ================================================================
-        //  СОБЫТИЯ
-        // ================================================================
-        canvas.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            if (!cameraActive) isUsingCamera = false;
-        });
-
-        canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            mouseX = touch.clientX;
-            mouseY = touch.clientY;
-            if (!cameraActive) isUsingCamera = false;
-        }, { passive: false });
-
-        canvas.addEventListener('touchstart', (e) => {
-            const touch = e.touches[0];
-            mouseX = touch.clientX;
-            mouseY = touch.clientY;
-            if (!cameraActive) isUsingCamera = false;
-        });
-
-        startBtn.addEventListener('click', async () => {
-            startBtn.textContent = '⏳ Загрузка...';
-            startBtn.disabled = true;
-            await initCamera();
-            startBtn.textContent = '▶ Начать игру';
-            startBtn.disabled = false;
-            startGame();
-        });
-
-        restartBtn.addEventListener('click', () => {
-            startGame();
-        });
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
 
         // ================================================================
         //  ЗАПУСК
         // ================================================================
         gameLoop();
         console.log('🚀 Космический сборщик загружен!');
+        console.log('👆 Тащите пальцем для управления');
     </script>
 </body>
 </html>
